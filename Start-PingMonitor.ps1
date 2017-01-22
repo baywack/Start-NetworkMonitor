@@ -24,28 +24,28 @@
 
     $Ping = @()
 
-    #Test if path exists, if not, create it
+    # Test if path exists, if not, create it
     If (-not (Test-Path (Split-Path $LogPath) -PathType Container)){   
         Write-Verbose "Folder doesn't exist $(Split-Path $LogPath), creating..."
         New-Item (Split-Path $LogPath) -ItemType Directory | Out-Null
     }
 
-    #Test if log file exists, if not add a header row
+    # Test if log file exists, if not add a header row
     If (-not (Test-Path $LogPath)){
         Write-Verbose "Log file doesn't exist: $($LogPath), creating..."
         Add-Content -Value '"TimeStamp","Source","Destination","IPV4Address","Status","ResponseTime"' -Path $LogPath
     }
 
-    #Log collection loop
+    # Log collection loop
     If ($Count -like "unlimited"){
         While ($true) {
             Write-output "Pinging forever - Press Ctrl-C antime to stop..."
             foreach ($Comp in $Computer){
                 Write-Verbose "Start Ping monitoring of $Comp forever..."
-                $Ping = Get-WmiObject Win32_PingStatus -Filter "Address = '$Comp'" | Select @{Label="TimeStamp";Expression={Get-Date}},@{Label="Source";Expression={ $_.__Server }},@{Label="Destination";Expression={ $_.Address }},IPv4Address,@{Label="Status";Expression={ If ($_.StatusCode -ne 0) {"DOWN"} Else {"UP"}}},ResponseTime
-                $Result = $Ping | Select TimeStamp,Source,Destination,IPv4Address,Status,ResponseTime | ConvertTo-Csv -NoTypeInformation
+                $Ping = Get-WmiObject Win32_PingStatus -Filter "Address = '$Comp'" | Select-Object @{Label="TimeStamp";Expression={Get-Date}},@{Label="Source";Expression={ $_.__Server }},@{Label="Destination";Expression={ $_.Address }},IPv4Address,@{Label="Status";Expression={ If ($_.StatusCode -ne 0) {"DOWN"} Else {"UP"}}},ResponseTime
+                $Result = $Ping | Select-Object TimeStamp,Source,Destination,IPv4Address,Status,ResponseTime | ConvertTo-Csv -NoTypeInformation
                 $Result[1] | Add-Content -Path $LogPath
-                Write-verbose ($Ping | Select TimeStamp,Source,Destination,IPv4Address,Status,ResponseTime | Format-Table -AutoSize | Out-String)
+                Write-verbose ($Ping | Select-Object TimeStamp,Source,Destination,IPv4Address,Status,ResponseTime | Format-Table -AutoSize | Out-String)
             }#Foreach
             Write-Verbose "Beginning 10 Sec Sleep..."
             Start-Sleep -Seconds 10
@@ -55,10 +55,10 @@
          While ($Count -gt 0) {
             foreach ($Comp in $Computer){
                 Write-Verbose "Start Ping monitoring of $Comp for $Count times..."
-                $Ping = Get-WmiObject Win32_PingStatus -Filter "Address = '$Comp'" | Select @{Label="TimeStamp";Expression={Get-Date}},@{Label="Source";Expression={ $_.__Server }},@{Label="Destination";Expression={ $_.Address }},IPv4Address,@{Label="Status";Expression={ If ($_.StatusCode -ne 0) {"DOWN"} Else {"UP"}}},ResponseTime
-                $Result = $Ping | Select TimeStamp,Source,Destination,IPv4Address,Status,ResponseTime | ConvertTo-Csv -NoTypeInformation
+                $Ping = Get-WmiObject Win32_PingStatus -Filter "Address = '$Comp'" | Select-Object @{Label="TimeStamp";Expression={Get-Date}},@{Label="Source";Expression={ $_.__Server }},@{Label="Destination";Expression={ $_.Address }},IPv4Address,@{Label="Status";Expression={ If ($_.StatusCode -ne 0) {"DOWN"} Else {"UP"}}},ResponseTime
+                $Result = $Ping | Select-Object TimeStamp,Source,Destination,IPv4Address,Status,ResponseTime | ConvertTo-Csv -NoTypeInformation
                 $Result[1] | Add-Content -Path $LogPath
-                Write-verbose ($Ping | Select TimeStamp,Source,Destination,IPv4Address,Status,ResponseTime | Format-Table -AutoSize | Out-String)
+                Write-verbose ($Ping | Select-Object TimeStamp,Source,Destination,IPv4Address,Status,ResponseTime | Format-Table -AutoSize | Out-String)
             }#ForEach
             Write-Verbose "Beginning 10 Sec Sleep..."
             Write-output "Pinging $count times - Press Ctrl-C antime to stop..."
